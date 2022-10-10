@@ -1,0 +1,42 @@
+training: !!bool "False"
+loss_func: "ge2e"  # ge2e, te2e, match
+device: "cuda"
+visible: "0"
+model_name: 'glg'  # glg, vgg, resnet50, xvct, etdnn, dtdnn, aert, ecapa, ftdnn, resnet34
+unprocessed_data: '/data/TIMIT/*/*/*/*.WAV'
+---
+data:
+    train_path: "./train_set"
+    test_path: "./test_set"
+    sr: 16000
+    nfft: 512 #For mel spectrogram preprocess
+    window: 0.025 #(s)
+    hop: 0.01 #(s)
+    nmels: 40 #Number of mel energies
+    tisv_frame: 180 #Max number of time steps in input after preprocess
+---
+model:
+    hidden: 768 #Number of LSTM hidden layer units
+    num_layer: 3 #Number of LSTM layers
+    proj: 256 #Embedding size
+    model_path: './checkpoints/glg_baseline/final_epoch_950_batch_id_283.model'
+    # model_path: './checkpoints_paper/lstm_baseline_TE2E/ckpt_epoch_2_batch_id_283.pth'
+
+---
+train:
+    N : 2 #Number of speakers in batch; before is 2
+    M : 6 #Number of utterances per speaker
+    num_workers: 0 #number of workers for dataloader
+    lr: 0.01
+    epochs: 2000 #Max training speaker epoch
+    log_interval: 10 #Epochs before printing progress
+    log_file: './checkpoints/glg_baseline/Stats'
+    checkpoint_interval: 500 #Save model after x speaker epochs
+    checkpoint_dir: './checkpoints/glg_baseline'
+    restore: !!bool "True" #Resume training from previous model path
+---
+test:
+    N: 4 #Number of speakers in batch
+    M: 6 #Number of utterances per speaker
+    num_workers: 1 #number of workers for data loader
+    epochs: 5 #testing speaker epochs
